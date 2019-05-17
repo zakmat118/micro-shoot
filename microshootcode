@@ -1,0 +1,67 @@
+let missile: game.LedSprite = null
+let opponentsmissile: game.LedSprite = null
+let score = 0
+let nummissles = 0
+let pause = false
+let player: game.LedSprite = null
+let switchxposition = 0
+radio.onDataPacketReceived(function ({ receivedString: name, receivedNumber: value }) {
+    switchxposition = Math.abs(value - 4)
+    if (name == "missileX") {
+        if (pause == false) {
+            opponentsmissile = game.createSprite(switchxposition, 0)
+            basic.pause(100)
+            while (opponentsmissile.get(LedSpriteProperty.Y) < 4) {
+                opponentsmissile.change(LedSpriteProperty.Y, 1)
+                if (opponentsmissile.isTouching(player)) {
+                    radio.sendValue("winner", 1)
+                    pause = true
+                    basic.showNumber(score)
+                    basic.pause(1000)
+                    pause = false
+                } else {
+                    basic.pause(100)
+                }
+            }
+            opponentsmissile.set(LedSpriteProperty.Brightness, 0)
+        }
+    }
+    if (name == "winner") {
+        score += 1
+        pause = true
+        basic.showNumber(score)
+        basic.pause(1000)
+        pause = false
+    }
+})
+input.onButtonPressed(Button.AB, function () {
+    if (pause == false) {
+        if (nummissles < 1) {
+            nummissles += 1
+            serial.writeNumber(nummissles)
+            missile = game.createSprite(player.get(LedSpriteProperty.X), player.get(LedSpriteProperty.Y))
+            while (missile.get(LedSpriteProperty.Y) > 0) {
+                missile.change(LedSpriteProperty.Y, -1)
+                basic.pause(100)
+            }
+            missile.set(LedSpriteProperty.Brightness, 0)
+            nummissles += -1
+            if (pause == false) {
+                radio.sendValue("missileX", missile.get(LedSpriteProperty.X))
+            }
+        }
+    }
+})
+input.onButtonPressed(Button.B, function () {
+    if (pause == false) {
+        player.change(LedSpriteProperty.X, 1)
+    }
+})
+input.onButtonPressed(Button.A, function () {
+    if (pause == false) {
+        player.change(LedSpriteProperty.X, -1)
+    }
+})
+basic.showString("321")
+player = game.createSprite(2, 4)
+score = 0
