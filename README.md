@@ -1,4 +1,4 @@
-# micro-shoot
+# micro:shoot
 
 A 2-player shooting game for the BBC micro:bit
 
